@@ -78,29 +78,6 @@ async def close(ctx):
         else:
         	await ctx.send(":x: | Этот канал не является каналом поддержки")
 
-# Поддержка
-@Bot.event
-async def on_message(message):
-    await Bot.process_commands(message)
-    channel = message.channel
-    support_channel = Bot.get_channel(844901971424706597)
-    isBot = message.author.bot
-    if(message.author.bot): return
-    if(channel != support_channel): return
-    await message.delete()
-    guild = message.guild
-    channel2 = await guild.get_channel(846102748713844736).create_text_channel(message.author.id)
-    await channel2.set_permissions(message.author, read_messages=True,send_messages=True)
-    emb=discord.Embed( title = '', colour= 0x04ff00 )
-    emb.set_author(name="Обращение к команде поддержки")
-    emb.set_footer(text=f"{message.author.display_name}", icon_url = message.author.avatar_url)
-    emb.add_field( name = 'Суть обращения:', value = '{}'.format(message.content) )
-    await channel2.send(message.author.mention+", **`для команды поддержки`** `<@&846102269551837225>`")
-    await channel2.send(embed=emb)
-    #message2 = await channel.send(message.author.mention + ", вы успешно оставили своё обращение! Перейдите в канал " + channel2.mention + " для просмотра ответа.")
-    await asyncio.sleep(5)
-    #await message2.delete()
-
 # Эмбед ТП
 @Bot.command( pass_context=True )
 async def embed(ctx):
