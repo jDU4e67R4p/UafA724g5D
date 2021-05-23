@@ -53,50 +53,70 @@ async def on_command_error(ctx, error):
 	if isinstance(error, commands.CommandNotFound):
 		await ctx.send(embed = discord.Embed(description = f'{ctx.author.name}, команда не найдена!', colour = discord.Color.red()))
 
-@Bot.command()
-async def suggest(ctx, *, txt = None):
-	if txt is None:
-		await ctx.send(f"**{ctx.author}**, напишите ваше предложение \n Пример команды: ***`.suggest Добавить нового бота`***")
-	else:
-		channel = Bot.get_channel(844901883259781160)
-		emb = discord.Embed(title=f"**{ctx.author}, отправил своё улучшение!**", colour=0x04ff00)
-		emb.add_field( name='**Текст идеи:**', value=txt)
-		emb.set_footer(text= "HiManBot 💚 | Идеи")
-		sugg = await channel.send( embed = emb )
-		await sugg.add_reaction('✅')
-		await sugg.add_reaction('❌')
-		await ctx.send(f'**{ctx.author}, Ваша идея была отправлена!**')
+# Закрытие канала
+@Bot.command( pass_context=True )
+async def close(ctx):
+    role = discord.utils.get(ctx.guild.roles, id=846102269551837225)
+    if role not in ctx.author.roles:
+        await ctx.send(":x: | Вы не состоите в **Support Team**!")
+    else:
+        if ctx.channel.category.id == 806235787628642335 and ctx.channel.name != 'обращение-close':
+            member = await Bot.fetch_user(ctx.channel.name)
+            await ctx.channel.set_permissions(member, send_messages=False,read_messages=True)
+            await ctx.send(f"{member.mention}, **саппорт {ctx.author.mention} установил вашему обращению статус: 'Закрыто'**")
+            message = await ctx.send(f"Поставьте пожалуйста свою оценку саппорту!")
+            await message.add_reaction('👍')
+            await message.add_reaction('👎')
+            cursor.execute(f"INSERT INTO reactions VALUES ('{message.channel.id}', '{message.id}', '{ctx.message.author.id}')")
+            connection.commit()
+            mss = await ctx.send("Идёт закрытие канала! Пожалуйста, подождите")
+            await ctx.channel.edit(name="обращение-close")
+            await ctx.channel.set_permissions(role, send_messages=False,read_messages=True)
+            await ctx.message.delete()
+            #await Bot.get_channel(829756582581370890).send(ctx.message.author.mention+" +1 балл (" +ctx.channel.mention+")")
+            await mss.delete()
+        else:
+        	await ctx.send(":x: | Этот канал не является каналом поддержки")
 
-@Bot.command()
-async def ticket(ctx, *, txt = None, ):
-	if txt is None:
-		await ctx.send(f"**{ctx.author}**, напишите ваш вопрос\n Пример команды: ***.tiket `Как был создан этот сервер?`***")
-	else:
-		channel = Bot.get_channel(844901971424706597)
-		emb = discord.Embed(title=f"❓ Новый вопрос!", colour=0x04ff00)
-		emb.add_field( name='**Вопрос:**', value=txt)
-		emb.add_field( name='**Задал:**', value=ctx.message.author.mention, inline = False)
-		emb.set_footer(text= "HiManBot 💚 | Поддержка")
-		sugg = await channel.send( embed = emb )
-		await ctx.send(f'**{ctx.author}, Ваш вопрос был отправлен!**')
+# Поддержка
+@Bot.event
+async def on_message(message):
+    await Bot.process_commands(message)
+    channel = message.channel
+    support_channel = Bot.get_channel(844901971424706597)
+    isBot = message.author.bot
+    if(message.author.bot): return
+    if(channel != support_channel): return
+    await message.delete()
+    guild = message.guild
+    channel2 = await guild.get_channel(846102748713844736).create_text_channel(message.author.id)
+    await channel2.set_permissions(message.author, read_messages=True,send_messages=True)
+    emb=discord.Embed( title = '', colour= 0x04ff00 )
+    emb.set_author(name="Обращение к команде поддержки")
+    emb.set_footer(text=f"{message.author.display_name}", icon_url = message.author.avatar_url)
+    emb.add_field( name = 'Суть обращения:', value = '{}'.format(message.content) )
+    await channel2.send(message.author.mention+", **`для команды поддержки`** `<@&846102269551837225>`")
+    await channel2.send(embed=emb)
+    #message2 = await channel.send(message.author.mention + ", вы успешно оставили своё обращение! Перейдите в канал " + channel2.mention + " для просмотра ответа.")
+    await asyncio.sleep(5)
+    #await message2.delete()
 
-@Bot.command()
-@commands.has_any_role(813107950309736448, 844982428174647336, 806102838174154774, 844982917259198494, 844983277528809492, 844983550743019530, 843926339421863966, 805802707390169088)
-async def answer(ctx, user: discord.Member = None, *, txt = None):
-	if user is None:
-		await ctx.send(f"**{ctx.author}**, напишите кому хотите дать ответ\n Пример команды: ***.answer `@Ник` `Ответ`***")
-	else:
-		if txt is None:
-			await ctx.send(f"**{ctx.author}**, напишите ответ\n Пример команды: ***.answer `@Ник` `Ответ`***")
-		else:
-			channel = Bot.get_channel(844901971424706597)
-			emb = discord.Embed(title=f"❓ Новый ответ!", colour=0x04ff00)
-			emb.add_field( name='**Ответ:**', value=txt)
-			emb.add_field( name='**Задал:**', value=user, inline = False)
-			emb.add_field( name='**Ответил:**', value=ctx.message.author.mention, inline = False)
-			emb.set_footer(text= "HiManBot 💚 | Поддержка")
-			sugg = await channel.send( embed = emb )
-			await ctx.send(f'**{ctx.author}, Ваш ответ был отправлен!**')
+# Эмбед ТП
+@Bot.command( pass_context=True )
+async def embed(ctx):
+    if ctx.message.author.guild_permissions.administrator:
+        emb1 = discord.Embed( title="Тех.Поддержка сервера HiMan", colour=0xff8c00 ) # Создаем ембед
+        emb1.add_field( name='Правила подачи обращения', value='```1) Запрещено отправлять оскорбительные сообщения\n2) Запрещено отправлять сообщения с непристойным материалом\n3) Запрещено создавать обращения без причины```', inline=False)
+        emb1.add_field( name='Всего', value='`обработанных обращений:` ?', inline=True)
+        emb1.add_field( name='Всего', value='`обращений на рассмотрении:` ?', inline=True)
+        emb1.add_field( name='Всего', value='`закрытых обращений:` ?', inline=True)
+        emb1.set_footer(text= "© HiMan Support | Тех.Поддержка")
+        emb1.set_image( url='https://images-ext-2.discordapp.net/external/cQxwDjOv26SB4UNSoL58YRtmhJFOediiOfT8tVSqAGw/https/images-ext-2.discordapp.net/external/uxj2OXVnN-UuIlbnrx9bTD7aYuLJoUmSC8uInIL9b9Q/https/images-ext-2.discordapp.net/external/RoNgImbrFiwy16IZVStGaUy4ZZrJPSuVcRN1r7l-SQY/https/imgur.com/LKDbJeM.gif' )
+        emb1.timestamp = datetime.datetime.utcnow()
+        await ctx.send( embed = emb1)
+        await ctx.message.delete()
+    else:
+        await ctx.send(":x: | У вас нет прав!")
 
 # Информация о пользователе
 @Bot.command( pass_context=True )
