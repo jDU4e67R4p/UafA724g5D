@@ -56,7 +56,7 @@ async def on_command_error(ctx, error):
 # Закрытие канала
 @Bot.command( pass_context=True )
 async def close(ctx):
-    role = discord.utils.get(ctx.guild.roles, id=846102269551837225)
+    role = discord.utils.get(ctx.guild.roles, id=846102748713844736)
     if role not in ctx.author.roles:
         await ctx.send(":x: | Вы не состоите в **Support Team**!")
     else:
