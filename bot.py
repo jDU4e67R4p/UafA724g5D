@@ -53,6 +53,25 @@ async def on_command_error(ctx, error):
 	if isinstance(error, commands.CommandNotFound):
 		await ctx.send(embed = discord.Embed(description = f'{ctx.author.name}, команда не найдена!', colour = discord.Color.red()))
 
+# Идеи
+@Bot.command()
+async def suggest( ctx, *, suggest = None):
+    if suggest is None:
+        await ctx.send(":x: | Вы не указали идею!")
+
+    else:
+        channel = Bot.get_channel(844901883259781160)
+        emb=discord.Embed( title = '', colour= 0xff8c00 )
+        emb.set_author(name=ctx.author.name + "#" + ctx.author.discriminator + ", отправил своё улучшение!", icon_url = ctx.author.avatar_url)
+        emb.add_field( name = 'Текст идеи:', value = '** ```{}``` **'.format( suggest ) )
+        emb.set_footer(text= "© HiMan Bot 💚 | Идеи")
+        emb.timestamp = datetime.datetime.utcnow()
+        message = await channel.send(embed=emb)
+        await message.add_reaction('✅')
+        await message.add_reaction('❌')
+        await ctx.message.delete()
+        await ctx.send("Вы успешно отправили свою идею!")
+
 # Закрытие канала
 @Bot.command( pass_context=True )
 async def close(ctx):
