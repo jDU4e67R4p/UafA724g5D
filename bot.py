@@ -79,7 +79,7 @@ async def close(ctx):
     if role not in ctx.author.roles:
         await ctx.send(":x: | Вы не состоите в **Support Team**!")
     else:
-        if ctx.channel.category.id == 806235787628642335 and ctx.channel.name != 'обращение-close':
+        if ctx.channel.category.id == 846102748713844736 and ctx.channel.name != 'обращение-close':
             member = await Bot.fetch_user(ctx.channel.name)
             await ctx.channel.set_permissions(member, send_messages=False,read_messages=True)
             await ctx.send(f"{member.mention}, **саппорт {ctx.author.mention} установил вашему обращению статус: 'Закрыто'**")
