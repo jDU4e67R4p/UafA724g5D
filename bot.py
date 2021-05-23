@@ -61,7 +61,7 @@ async def suggest( ctx, *, suggest = None):
 
     else:
         channel = Bot.get_channel(844901883259781160)
-        emb=discord.Embed( title = '', colour= 0xff8c00 )
+        emb=discord.Embed( title = '', colour= 0x04ff00 )
         emb.set_author(name=ctx.author.name + "#" + ctx.author.discriminator + ", отправил своё улучшение!", icon_url = ctx.author.avatar_url)
         emb.add_field( name = 'Текст идеи:', value = '** ```{}``` **'.format( suggest ) )
         emb.set_footer(text= "© HiMan Bot 💚 | Идеи")
